@@ -1,0 +1,122 @@
+[
+  {
+    "station": {
+      "station_id": "40900",
+      "stationame": "Howard"
+    },
+    "month": "2001-01-01T00:00:00",
+    "rides": {
+      "avg_weekday_rides": "6233.9",
+      "avg_saturday_rides": "3814.5",
+      "avg_sunday_holiday_rides": "2408.6"
+    }
+  },
+  {
+    "station": {
+      "station_id": "41190",
+      "stationame": "Jarvis"
+    },
+    "month": "2001-01-01T00:00:00",
+    "rides": {
+      "avg_weekday_rides": "1489.1",
+      "avg_saturday_rides": "1054",
+      "avg_sunday_holiday_rides": "718"
+    }
+  },
+  {
+    "station": {
+      "station_id": "40100",
+      "stationame": "Morse"
+    },
+    "month": "2001-01-01T00:00:00",
+    "rides": {
+      "avg_weekday_rides": "4412.5",
+      "avg_saturday_rides": "3064.5",
+      "avg_sunday_holiday_rides": "2087.8"
+    }
+  },
+  {
+    "station": {
+      "station_id": "41300",
+      "stationame": "Loyola"
+    },
+    "month": "2001-01-01T00:00:00",
+    "rides": {
+      "avg_weekday_rides": "4664.5",
+      "avg_saturday_rides": "3156",
+      "avg_sunday_holiday_rides": "1952.8"
+    }
+  },
+  {
+    "station": {
+      "station_id": "40760",
+      "stationame": "Granville"
+    },
+    "month": "2001-01-01T00:00:00",
+    "rides": {
+      "avg_weekday_rides": "3109.8",
+      "avg_saturday_rides": "2126",
+      "avg_sunday_holiday_rides": "1453.8"
+    }
+  },
+  {
+    "station": {
+      "station_id": "40850",
+      "stationame": "Library"
+    },
+    "month": "2020-09-01T00:00:00",
+    "rides": {
+      "avg_weekday_rides": "864.2",
+      "avg_saturday_rides": "534",
+      "avg_sunday_holiday_rides": "417.2"
+    }
+  },
+  {
+    "station": {
+      "station_id": "40680",
+      "stationame": "Adams/Wabash"
+    },
+    "month": "2020-09-01T00:00:00",
+    "rides": {
+      "avg_weekday_rides": "1332.3",
+      "avg_saturday_rides": "791.8",
+      "avg_sunday_holiday_rides": "601.6"
+    }
+  },
+  {
+    "station": {
+      "station_id": "41700",
+      "stationame": "Washington/Wabash"
+    },
+    "month": "2020-09-01T00:00:00",
+    "rides": {
+      "avg_weekday_rides": "2707.4",
+      "avg_saturday_rides": "1909.8",
+      "avg_sunday_holiday_rides": "1438.6"
+    }
+  },
+  {
+    "station": {
+      "station_id": "40260",
+      "stationame": "State/Lake"
+    },
+    "month": "2020-09-01T00:00:00",
+    "rides": {
+      "avg_weekday_rides": "2410",
+      "avg_saturday_rides": "2042.3",
+      "avg_sunday_holiday_rides": "1660.6"
+    }
+  },
+  {
+    "station": {
+      "station_id": "40380",
+      "stationame": "Clark/Lake"
+    },
+    "month": "2020-09-01T00:00:00",
+    "rides": {
+      "avg_weekday_rides": "2949.6",
+      "avg_saturday_rides": "1657",
+      "avg_sunday_holiday_rides": "1453.8"
+    }
+  }
+]

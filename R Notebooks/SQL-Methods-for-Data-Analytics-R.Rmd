@@ -1,0 +1,348 @@
+---
+title: "SQL Methods for Data Analytics"
+output: html_notebook
+---
+
+<div style="text-align:left"><img src="images/sql_analytics.png" alt="sql analytics icon" width="200px"/></div>
+<br/>
+
+### What is SQL (Structured Query Language)?
+
+<ul style="font-size:20px;line-height:24px;">
+   <li>Special-purpose, declarative programming language</li>
+   <li>Designed to define, manipulate, retrieve data stored in databases</li>
+   <li>ANSI standard with many extensions by dialects</li>
+</ul>
+
+
+### Advantages in Data Analytics
+
+<ul style="font-size:20px;line-height:24px;">
+    <li>Readable and maintainable expressive style of sentence semantics</li>
+    <li>Layered in application code (i.e., R) and transferable across platforms</li>
+    <li>Efficiency with set-based, logical order, and query optimizer</li>
+    <li>Scales to big data platforms and repositories</li>
+    <li>Complementary tool with heavy lifting of data pipeline</li>
+</ul>
+
+
+---
+
+### Example Data
+
+<span style="font-size:18px">Botanic Gardens Conservation International (BGCI)<br/>
+Plants Threat Assessment: <a href="https://tools.bgci.org/plant_search.php">https://tools.bgci.org/plant_search.php</a></span>
+
+<br/>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "")
+```
+
+
+<div style="float:right;"><img src="images/sqlite_icon.jpg" alt="sql analytics icon" width="50px"/></div>
+### SQLite
+#### (file-level, open-source RDBMS)
+
+```{r}
+library(RSQLite)
+
+conn <- dbConnect(RSQLite::SQLite(), "data/BGCI_Plants_ThreatSearch.db")
+```
+
+### Data Organization
+
+#### (e.g., data cleaning, formatting, processing)
+
+```{sql connection=conn}
+SELECT p.family
+     , p.major_group
+     , p.genus
+     , p.plant_name
+     , p.published_conservation_status AS published_status
+     , p.interpreted_conservation_status AS intrepreted_status
+     , p.assessment_year
+     , p.scope
+     , p.source
+FROM plants_assessment p
+ORDER BY p.major_group
+       , p.family
+       , p.genus
+LIMIT 10;
+
+```
+
+```{sql connection=conn}
+SELECT major_group
+      , family
+      , genus
+      , SUBSTR(plant_name, 1, INSTR(plant_name, ' '))                         -- STRING FUNCTIONS
+        ||              
+        SUBSTR(REPLACE(plant_name,
+                       SUBSTR(plant_name, 1, INSTR(plant_name, ' ')),
+                       ''),
+               1, 
+               INSTR(REPLACE(plant_name,
+                             SUBSTR(plant_name, 1, INSTR(plant_name, ' ')),
+                            ''),
+                     ' ')
+               ) AS plant       
+      , published_conservation_status AS published_status
+      , CASE                                                                  -- CONDITIONAL LOGIC
+            WHEN interpreted_conservation_status = 'Data Deficient'
+            THEN NULL
+            ELSE interpreted_conservation_status
+        END AS interpreted_status
+      , assessment_year
+      , assessment_year - 1970 AS study_year                                  -- ARITHMETIC OPERATIONS
+      , CASE                                                                  -- CONDITIONAL LOGIC
+            WHEN scope LIKE '%Unknown%'                                       -- STRING PATTERN SEARCH
+            THEN NULL
+            ELSE scope                                                      
+        END AS scope
+      , SUBSTR(source, 1, 30) AS short_source                                 -- STRING FUNCTIONS  
+        
+FROM plants_assessment 
+ORDER BY ROWID DESC LIMIT 10;
+```
+
+
+### Set-Based Operation
+
+#### (e.g., group/clusters or sampling representation)
+
+```{sql connection=conn}
+SELECT scope
+FROM plants_assessment
+WHERE interpreted_conservation_status = 'Not Threatened'
+GROUP BY scope
+
+UNION 
+
+SELECT scope
+FROM plants_assessment
+WHERE interpreted_conservation_status = 'Threatened'
+GROUP BY scope
+```
+
+```{sql connection=conn}
+SELECT scope
+FROM plants_assessment
+WHERE interpreted_conservation_status = 'Not Threatened'
+GROUP BY scope
+
+INTERSECT
+
+SELECT scope
+FROM plants_assessment
+WHERE interpreted_conservation_status = 'Threatened'
+GROUP BY scope
+```
+
+```{sql connection=conn}
+SELECT scope
+FROM plants_assessment
+WHERE interpreted_conservation_status = 'Threatened'
+GROUP BY scope
+
+EXCEPT
+
+SELECT scope
+FROM plants_assessment
+WHERE interpreted_conservation_status = 'Not Threatened'
+GROUP BY scope
+```
+
+```{sql connection=conn}
+SELECT scope
+FROM plants_assessment
+WHERE interpreted_conservation_status = 'Not Threatened'
+GROUP BY scope
+
+EXCEPT
+
+SELECT scope
+FROM plants_assessment
+WHERE interpreted_conservation_status = 'Threatened'
+GROUP BY scope
+```
+
+### Combinations/Permutations Pairing
+
+#### (e.g., balanced longitudinal panel and  time series)
+
+```{sql connection=conn}
+SELECT m.major_group
+     , y.assessment_year
+FROM 
+  (SELECT DISTINCT major_group FROM plants_assessment) m
+CROSS JOIN
+  (SELECT DISTINCT assessment_year FROM plants_assessment) y
+WHERE m.major_group IS NOT NULL
+  AND y.assessment_year IS NOT NULL
+ORDER BY m.major_group
+       , y.assessment_year
+```
+
+
+### Aggregation
+
+#### (e.g., summary stats and diagnostics)
+
+```{sql connection=conn}
+SELECT p.major_group
+     , COUNT(DISTINCT p.family) AS unq_families
+     , COUNT(DISTINCT p.genus) AS unq_genera
+     , COUNT(p.plant_name) AS count_plants
+     , MIN(p.assessment_year) AS min_year
+     , MAX(p.assessment_year) AS max_year
+     
+FROM plants_assessment p
+GROUP BY p.major_group
+```
+
+
+```{sql connection=conn}
+SELECT p.interpreted_conservation_status
+     , COUNT(DISTINCT p.family) AS unq_families
+     , COUNT(DISTINCT p.genus) AS unq_genera
+     , COUNT(p.plant_name) AS count_pants
+     , MIN(p.assessment_year) AS min_year
+     , MAX(p.assessment_year) AS max_year
+     
+FROM plants_assessment p
+GROUP BY p.interpreted_conservation_status
+```
+
+```{sql connection=conn}
+SELECT p.major_group
+     , p.interpreted_conservation_status
+     , COUNT(DISTINCT p.family) AS unq_families
+     , COUNT(DISTINCT p.genus) AS unq_genera
+     , COUNT(p.plant_name) AS count_plants
+     , MIN(p.assessment_year) AS min_year
+     , MAX(p.assessment_year) AS max_year
+     
+FROM plants_assessment p
+GROUP BY p.major_group
+       , p.interpreted_conservation_status
+```
+
+
+### Reshape Data
+
+#### (e.g., reporting/presentation)
+
+```{sql connection=conn}
+SELECT p.major_group
+     , SUM(p.assessment_year == 2015) AS count_plants_2015
+     , SUM(p.assessment_year == 2016) AS count_plants_2016
+     , SUM(p.assessment_year == 2017) AS count_plants_2017
+     , SUM(p.assessment_year == 2018) AS count_plants_2018
+     , SUM(p.assessment_year == 2019) AS count_plants_2019
+     , SUM(p.assessment_year == 2020) AS count_plants_2020
+FROM plants_assessment p
+WHERE p.interpreted_conservation_status = 'Threatened' 
+GROUP BY p.major_group
+```
+
+```{sql connection=conn}
+SELECT p.major_group
+     , COUNT(*) AS count_plants
+     , SUM(p.interpreted_conservation_status = 'Threatened') AS count_threatened_plants
+     , SUM(p.interpreted_conservation_status = 'Not Threatened') AS count_not_threatened_plants
+FROM plants_assessment p
+WHERE p.assessment_year >= 2015
+GROUP BY p.major_group
+```
+
+
+### Common Table Expression (CTE) And Window Functions
+
+#### (e.g., running calculations, lead/lag variables, moving averages)
+
+```{sql connection=conn}
+WITH sub AS 
+  (SELECT p.major_group
+     , p.interpreted_conservation_status
+     , COUNT(DISTINCT p.family) AS unq_families
+     , COUNT(DISTINCT p.genus) AS unq_genera
+     , COUNT(p.plant_name)*1.00 AS count_plants
+     , MIN(p.assessment_year) AS min_year
+     , MAX(p.assessment_year) AS max_year
+   FROM plants_assessment p
+   GROUP BY p.major_group
+          , p.interpreted_conservation_status
+  ) 
+  
+SELECT sub.major_group
+     , sub.interpreted_conservation_status
+     , sub.count_plants
+     , ROW_NUMBER() OVER(PARTITION BY sub.major_group
+                         ORDER BY sub.count_plants DESC) AS rn
+     , SUM(sub.count_plants) OVER(PARTITION BY sub.major_group) AS group_sum
+     , ROUND(sub.count_plants / SUM(sub.count_plants) 
+                                OVER(PARTITION BY sub.major_group), 4) * 100 AS pct_total
+     , SUM(sub.count_plants) OVER(PARTITION BY sub.major_group
+                                  ORDER BY sub.count_plants DESC) AS run_sum
+FROM sub
+ORDER BY sub.major_group
+       , sub.count_plants DESC
+```
+
+### Interval, Lateral, and Range Join
+
+#### (e.g., log files, event/time studies, tracking data)
+
+```{sql connection=conn}
+WITH sub AS 
+  (SELECT p.major_group
+     , p.assessment_year
+     , COUNT(DISTINCT p.family) AS unq_families
+     , COUNT(DISTINCT p.genus) AS unq_genera
+     , COUNT(p.plant_name)*1.00 AS count_plants
+     , MIN(p.assessment_year) AS min_year
+     , MAX(p.assessment_year) AS max_year
+   FROM plants_assessment p
+   WHERE p.interpreted_conservation_status = 'Threatened' 
+   GROUP BY p.major_group
+          , p.assessment_year
+  ) 
+  
+SELECT s1.major_group
+     , s1.assessment_year AS year1
+     , s2.assessment_year AS year2
+     , s1.count_plants AS count_plants_y1
+     , s2.count_plants AS count_plants_y2
+     , ROUND((s2.count_plants - s1.count_plants) / s2.count_plants, 2) AS year_pct_change
+FROM sub s1
+INNER JOIN sub  s2
+  ON  s1.major_group = s2.major_group 
+  AND s1.assessment_year = (s2.assessment_year - 1)
+ORDER BY s1.major_group
+       , s1.assessment_year DESC
+       , s2.assessment_year DESC
+```
+
+```{r}
+dbDisconnect(conn)
+rm(conn)
+```
+
+<br/>
+<br/>
+<br/>
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,92 @@
+<response>
+  <row>
+    <station id="40900" name="Howard"/>
+    <month>2001-01-01T00:00:00</month>
+    <rides>
+      <avg_weekday_rides>6233.9</avg_weekday_rides>
+      <avg_saturday_rides>3814.5</avg_saturday_rides>
+      <avg_sunday_holiday_rides>2408.6</avg_sunday_holiday_rides>
+    </rides>
+  </row>
+  <row>
+    <station id="41190" name="Jarvis"/>
+    <month>2001-01-01T00:00:00</month>
+    <rides>
+      <avg_weekday_rides>1489.1</avg_weekday_rides>
+      <avg_saturday_rides>1054</avg_saturday_rides>
+      <avg_sunday_holiday_rides>718</avg_sunday_holiday_rides>
+    </rides>
+  </row>
+  <row>
+    <station id="40100" name="Morse"/>
+    <month>2001-01-01T00:00:00</month>
+    <rides>
+      <avg_weekday_rides>4412.5</avg_weekday_rides>
+      <avg_saturday_rides>3064.5</avg_saturday_rides>
+      <avg_sunday_holiday_rides>2087.8</avg_sunday_holiday_rides>
+    </rides>
+  </row>
+  <row>
+    <station id="41300" name="Loyola"/>
+    <month>2001-01-01T00:00:00</month>
+    <rides>
+      <avg_weekday_rides>4664.5</avg_weekday_rides>
+      <avg_saturday_rides>3156</avg_saturday_rides>
+      <avg_sunday_holiday_rides>1952.8</avg_sunday_holiday_rides>
+    </rides>
+  </row>
+  <row>
+    <station id="40760" name="Granville"/>
+    <month>2001-01-01T00:00:00</month>
+    <rides>
+      <avg_weekday_rides>3109.8</avg_weekday_rides>
+      <avg_saturday_rides>2126</avg_saturday_rides>
+      <avg_sunday_holiday_rides>1453.8</avg_sunday_holiday_rides>
+    </rides>
+  </row>
+  <row>
+    <station id="40850" name="Library"/>
+    <month>2020-09-01T00:00:00</month>
+    <rides>
+      <avg_weekday_rides>864.2</avg_weekday_rides>
+      <avg_saturday_rides>534</avg_saturday_rides>
+      <avg_sunday_holiday_rides>417.2</avg_sunday_holiday_rides>
+    </rides>
+  </row>
+  <row>
+    <station id="40680" name="Adams/Wabash"/>
+    <month>2020-09-01T00:00:00</month>
+    <rides>
+      <avg_weekday_rides>1332.3</avg_weekday_rides>
+      <avg_saturday_rides>791.8</avg_saturday_rides>
+      <avg_sunday_holiday_rides>601.6</avg_sunday_holiday_rides>
+    </rides>
+  </row>
+  <row>
+    <station id="41700" name="Washington/Wabash"/>
+    <month>2020-09-01T00:00:00</month>
+    <rides>
+      <avg_weekday_rides>2707.4</avg_weekday_rides>
+      <avg_saturday_rides>1909.8</avg_saturday_rides>
+      <avg_sunday_holiday_rides>1438.6</avg_sunday_holiday_rides>
+    </rides>
+  </row>
+  <row>
+    <station id="40260" name="State/Lake"/>
+    <month>2020-09-01T00:00:00</month>
+    <rides>
+      <avg_weekday_rides>2410</avg_weekday_rides>
+      <avg_saturday_rides>2042.3</avg_saturday_rides>
+      <avg_sunday_holiday_rides>1660.6</avg_sunday_holiday_rides>
+    </rides>
+  </row>
+  <row>
+    <station id="40380" name="Clark/Lake"/>
+    <month>2020-09-01T00:00:00</month>
+    <rides>
+      <avg_weekday_rides>2949.6</avg_weekday_rides>
+      <avg_saturday_rides>1657</avg_saturday_rides>
+      <avg_sunday_holiday_rides>1453.8</avg_sunday_holiday_rides>
+    </rides>
+  </row>
+</response>

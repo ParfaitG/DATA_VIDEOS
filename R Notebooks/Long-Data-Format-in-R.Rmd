@@ -1,0 +1,243 @@
+---
+title: "Long Data Format in R"
+output: html_notebook
+---
+
+<div style="width:200px;margin-top:20px;"><img src="images/r_reshape.png" style="text-align:left"/></div>
+
+<br/>
+
+## Data Analytics Structure
+
+<ul style="font-size:20px;line-height:28px;">
+     <li>Datasets or data frames typically two-dimensions: row x column</li>
+     <li>Formats can vary with wide (many columns) or long (many rows)</li>    
+     <li>Long formats generally preferred for analytical operations <br/>(merging, aggregation, modeling, and plotting).</li>    
+</ul>
+
+---
+
+### Example Data: 
+### U.S. EPA Greenhouse Gases
+
+<span style="font-size:18px">https://cfpub.epa.gov/ghgdata/inventoryexplorer/index.html</span>
+
+## Wide Format
+
+<ul style="font-size:20px;line-height:28px;">
+   <li>Digestable as an end-use report</li>
+   <li>Difficult in data manipulation</li>
+   <li>Data element, year, is used as column headers</li>
+</ul>
+
+```{r}
+ghg_econ_sector_df <- read.csv("data/us_epa_ghg_econ_all_sectors.csv", check.names = FALSE)
+
+ghg_econ_sector_df
+```
+
+
+## Long Format
+
+<ul style="font-size:20px;line-height:28px">
+    <li>Stores with less meta data</li>
+    <li>Vectorized calculates without loops</li>
+    <li>Merging and appending with better scale</li>
+    <li>Aggregates with visible groups/types</li>
+    <li>Plots better with facets</li>
+</ul>
+
+### **`stats::reshape`**
+
+```{r}
+ghg_econ_sector_long_df <- reshape(ghg_econ_sector_df, varying = names(ghg_econ_sector_df)[-1],
+                                   times = names(ghg_econ_sector_df)[-1], ids = NULL,
+                                   v.names = "Emissions", timevar = "Year", new.row.names=1:1E5, 
+                                   direction="long")
+
+head(ghg_econ_sector_long_df, 10)
+```
+
+
+```{r}
+tail(ghg_econ_sector_long_df, 10)
+```
+
+### **`reshape2::melt`**
+
+```{r}
+library(reshape2)
+
+ghg_econ_sector_long_df <- melt(ghg_econ_sector_df, id.vars = "Economic Sector",
+                                variable.name = "Year", value.name = "Emissions")
+
+head(ghg_econ_sector_long_df, 10)
+```
+
+
+```{r}
+ghg_econ_sector_long_df[ sample(nrow(ghg_econ_sector_long_df), 10),]
+```
+
+
+## Multiple Groupings
+
+### Economic Sector and Emission Source and Year
+
+
+```{r}
+new_names <- c("Source", paste0(1990:2018), "Sector")
+
+files <- list(
+             `Commercial` = "data/us_epa_ghg_econ_comm_source.csv",
+             `Electricity Generation` = "data/us_epa_ghg_econ_elec_source.csv",
+             `Industrial` = "data/us_epa_ghg_econ_ind_source.csv",
+             `Residential` = "data/us_epa_ghg_econ_resid_source.csv",
+             `Transportation` = "data/us_epa_ghg_econ_trans_source.csv"
+         )
+
+ghg_econ_sector_src_df <- do.call(rbind.data.frame,
+      Map(function(f, d) setNames(transform(read.csv(d), Sector = f), new_names), 
+          names(files), files, USE.NAMES = FALSE)
+)
+
+head(ghg_econ_sector_src_df, 10)
+```
+
+```{r}
+tail(ghg_econ_sector_src_df, 10)
+```
+
+### Questions
+
+<ul style="font-size:20px;line-height:28px;">
+   <li>What is overall average or median by Sector? By Source? By both?</li>
+   <li>What is yearly average or median by Sector? By Source? By both?</li>
+   <li>What are the time trends by Sector? By Source? By both?</li>
+</ul>
+
+### Answers
+- ### With Long Data: `reshape` + `aggregate`
+
+
+```{r}
+ghg_econ_sector_src_long_df <- reshape(ghg_econ_sector_src_df, idvar=c("Sector", "Source"),
+                                       varying=paste0(1990:2018), times=1990:2018,
+                                       v.names="Emissions", timevar="Year", ids=NULL,
+                                       new.row.names=1:1E4, direction="long")
+
+head(ghg_econ_sector_src_long_df, 5)
+tail(ghg_econ_sector_src_long_df, 5)
+```
+
+
+## Overall
+
+```{r}
+agg_raw <- with(ghg_econ_sector_src_long_df,
+                matrix(c(min=min(Emissions), median=median(Emissions), mean=mean(Emissions), 
+                         max=max(Emissions), sd=sd(Emissions)),
+                       dimnames = list(c("min", "median", "mean", "max", "sd"), "Emissions")
+                )
+           )
+
+data.frame(agg_raw)
+```
+
+
+## By Sector
+
+```{r}
+agg_raw <- aggregate(Emissions ~ Sector, data=ghg_econ_sector_src_long_df,
+                     FUN=function(x) c(min=min(x), median=median(x), mean=mean(x), max=max(x), sd=sd(x)))
+
+agg_df <- do.call(data.frame, agg_raw)
+agg_df <- setNames(agg_df, gsub("Emissions.", "", names(agg_df)))
+
+agg_df
+```
+
+## By Source
+
+```{r}
+agg_raw <- aggregate(Emissions ~ Source, data=ghg_econ_sector_src_long_df,
+                     FUN=function(x) c(min=min(x), median=median(x), mean=mean(x), max=max(x), sd=sd(x)))
+
+agg_df <- do.call(data.frame, agg_raw)
+agg_df <- setNames(agg_df, gsub("Emissions.", "", names(agg_df)))
+
+agg_df
+```
+
+
+
+## By Year
+
+```{r}
+agg_raw <- aggregate(Emissions ~ Year, data=ghg_econ_sector_src_long_df,
+                     FUN=function(x) c(min=min(x), median=median(x), mean=mean(x), max=max(x), sd=sd(x)))
+
+agg_df <- do.call(data.frame, agg_raw)
+agg_df <- setNames(agg_df, gsub("Emissions.", "", names(agg_df)))
+
+agg_df
+```
+
+
+## By Sector and Source
+
+```{r}
+agg_raw <- aggregate(Emissions ~ Sector + Source, data=ghg_econ_sector_src_long_df,
+                     FUN=function(x) c(min=min(x), median=median(x), mean=mean(x), max=max(x), sd=sd(x)))
+
+agg_df <- do.call(data.frame, agg_raw)
+agg_df <- setNames(agg_df, gsub("Emissions.", "", names(agg_df)))
+
+agg_df
+```
+
+## Plot with Facets and Fill: Two Groups
+
+```{r fig1, fig.height = 15, fig.width = 15}
+library(ggplot2)
+
+seaborn_palette <- c("#4c72b0","#55a868","#c44e52","#8172b2","#ccb974","#64b5cd")
+
+ggplot(ghg_econ_sector_src_long_df, aes(x=Year, y=Emissions, fill=Sector)) +
+  geom_col() + 
+  labs(title="U.S. Emissions by Sector and Year, 1990-2018\n", 
+       x="Year", y="Emissions\n(millions metric tons of CO2 equivalents)") +
+  theme(legend.position="none", plot.title = element_text(size=20, hjust = 0.5),
+        legend.title=element_text(size=14), legend.text=element_text(size=14), 
+        legend.key.size = unit(0.75, "line"),
+        axis.text=element_text(size=12), axis.title=element_text(size=14),
+        strip.text.x = element_text(size = 14)) + 
+  scale_x_continuous(breaks=c(1990:2018), expand=c(0.01, 0.01)) +
+  scale_fill_manual(values = seaborn_palette) +
+  facet_wrap(~Sector, ncol=1)
+```
+
+## Plot with Facets and Fill: Multiple Groups
+
+```{r fig2, fig.height = 25, fig.width = 15}
+ggplot(ghg_econ_sector_src_long_df, aes(x=Year, y=Emissions, fill=Sector)) +
+  geom_col() + 
+  labs(title="U.S. Emissions by Sector and Year, 1990-2018\n", 
+       x="Year", y="Emissions\n(millions metric tons of CO2 equivalents)") +
+  theme(legend.position="none", plot.title = element_text(size=20, hjust = 0.5),
+        legend.title=element_text(size=14), legend.text=element_text(size=14), 
+        legend.key.size = unit(0.75, "line"),
+        axis.text=element_text(size=12), axis.title=element_text(size=14),
+        axis.text.x=element_text(angle=90),
+        strip.text.x = element_text(size = 14), strip.text.y = element_text(size = 14)) + 
+  scale_x_continuous(breaks=seq(1990, 2018, by=2), expand=c(0.01, 0.01)) +
+  scale_fill_manual(values = seaborn_palette) +
+  facet_grid(Source ~ Sector, labeller = label_wrap_gen(width=15))
+```
+
+
+<br/>
+<br/>
+<br/>
+
+

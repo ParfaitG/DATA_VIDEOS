@@ -1,0 +1,214 @@
+---
+title: "Data Containers in R"
+output: html_notebook
+---
+
+<div style="width:200px;margin-top:20px;"><img src="images/r_datasets.png" style="text-align:left"/></div>
+
+<br/>
+
+<span style="font-size:24px;line-height:28px;">In age of big data volume, velocity, and variety:<br/>Store many similarly structured data frames in R lists</span>
+
+
+---
+
+### Example Data
+#### NOAA: Arctic and Antarctica Sea Ice Index
+
+#### https://nsidc.org/data/G02135/versions/3
+
+<br/>
+
+### Traditional Approach: Separate 24 Data Frames
+
+#### Northern Hemisphere: Arctic
+
+```{r}
+north_ftp <- "ftp://sidads.colorado.edu/DATASETS/NOAA/G02135/north/monthly/data/"
+
+n01 <- read.csv(paste0(north_ftp, "N_01_extent_v3.0.csv"))
+n02 <- read.csv(paste0(north_ftp, "N_02_extent_v3.0.csv"))
+n03 <- read.csv(paste0(north_ftp, "N_03_extent_v3.0.csv"))
+# ...
+n12 <- read.csv(paste0(north_ftp, "N_12_extent_v3.0.csv"))
+```
+
+<br/>
+
+#### South Hemisphere: Antarctica
+
+```{r}
+south_ftp <- "ftp://sidads.colorado.edu/DATASETS/NOAA/G02135/south/monthly/data/"
+
+s01 <- read.csv(paste0(south_ftp, "S_01_extent_v3.0.csv"))
+s02 <- read.csv(paste0(south_ftp, "S_02_extent_v3.0.csv"))
+s03 <- read.csv(paste0(south_ftp, "S_03_extent_v3.0.csv"))
+# ...
+s12 <- read.csv(paste0(south_ftp, "S_12_extent_v3.0.csv"))
+```
+
+```{r}
+ls()
+```
+
+### Traditional Approach: Dynamic Assignment of Separate Objects
+
+- #### Avoid use of environment changing methods: `assign`, `attach`, `<<-`
+- #### Diverges from Rs' functional programming with data objects
+- #### Requires side-effects in parent or select environments
+
+```{r eval=FALSE}
+north_ftp <- "ftp://sidads.colorado.edu/DATASETS/NOAA/G02135/north/monthly/data/"
+south_ftp <- "ftp://sidads.colorado.edu/DATASETS/NOAA/G02135/south/monthly/data/"
+
+for (i in 1:9) {
+  if (i <= 9) {
+    assign(paste0("N0", i), read.csv(paste0(north_ftp, "/N_0", i, "_extent_v3.0.csv")))
+    assign(paste0("S0", i), read.csv(paste0(south_ftp, "/S_0", i, "_extent_v3.0.csv")))
+  } 
+  else {
+    assign(paste0("N", i), read.csv(paste0(north_ftp, "/N_", i, "_extent_v3.0.csv")))
+    assign(paste0("S", i), read.csv(paste0(south_ftp, "/S_", i, "_extent_v3.0.csv")))
+  }
+}
+```
+
+<br/>
+<br/>
+
+### Best Practice Approach: Single Named List of Many Data Frames
+
+- #### Avoid flooding global environment with many separate objects
+- #### Serializes data elements for organization and management
+- #### Avoid repetitive, tedious code for readability and maintainability
+
+```{r}
+north_ftp <- "ftp://sidads.colorado.edu/DATASETS/NOAA/G02135/north/monthly/data/"
+south_ftp <- "ftp://sidads.colorado.edu/DATASETS/NOAA/G02135/south/monthly/data/"
+
+prefs <- c(paste0("N_0", 1:9), paste0("N_", 10:12), paste0("S_0", 1:9), paste0("S_", 10:12))
+
+sea_ice_dfs <- sapply(prefs, function(f) {
+  if(grepl("N", f)) { df <- read.csv(paste0(north_ftp, f, "_extent_v3.0.csv")) }
+  if(grepl("S", f)) { df <- read.csv(paste0(south_ftp, f, "_extent_v3.0.csv")) }
+  
+  return(df)
+}, simplify=FALSE)
+
+str(sea_ice_dfs)
+```
+
+
+### Data frames within Lists
+
+- #### Indexable reference with no need to recall from environment: `ls`, `mget`, `eapply`
+- #### No loss of functionality or properties: `head`, `tail`, `summary`
+- #### Standardize operations on similarly-structured objects
+
+```{r}
+head(sea_ice_dfs$N_01, 10)
+```
+
+```{r}
+tail(sea_ice_dfs[["N_01"]], 10)
+```
+
+```{r}
+summary(sea_ice_dfs[[3]])
+```
+
+```{r}
+lapply(sea_ice_dfs, summary)
+```
+
+### Plotting
+
+```{r gridfig, fig.height = 28, fig.width = 13, fig.align = "center"}
+par(mfrow=c(8, 3), mar=c(2,3,5,1))
+output <- lapply(sea_ice_dfs, function(df) {
+  
+  df <- subset(df, trimws(data.type) != "-9999" & extent != -9999.00 & area != -9999.00)
+  
+  plot(df$year, df$extent, type='l',
+       main=paste(ifelse(trimws(df$region[1]) == "N", "Arctic", "Antarctica"), 
+                  month.name[df$mo[1]], 
+                  "\nSea Ice Extent and Area (1979 - 2020)"),
+       xlab="Year", ylab="Square Kilometers (millions)", font.lab=2,
+       ylim=c(min(df$area), max(df$extent)),
+       col='blue', lwd=1,
+       cex.main=1.75, cex.lab=1.5, cex.axis = 1.5)
+  
+  lines(df$year, df$area, pch=16, col='red', lwd=1)
+  legend("topright", legend=c("extent", "area"), col=c("red", "blue"), lty=1, cex=1)
+})
+```
+
+<br/>
+<br/>
+
+### Master Compilation
+
+```{r}
+sea_ice_df <- do.call(rbind.data.frame, unname(sea_ice_dfs))
+
+str(sea_ice_df)
+```
+```{r}
+sea_ice_df <- setNames(sea_ice_df, trimws(names(sea_ice_df)))
+
+sea_ice_df['date'] <- with(sea_ice_df, as.Date(paste0(year,'-',mo,'-01'), format="%Y-%m-%d"))
+```
+
+```{r}
+sea_ice_df <- data.frame(with(sea_ice_df, sea_ice_df[order(region, date),]), row.names=NULL)
+```
+
+```{r}
+head(sea_ice_df)
+```
+
+```{r}
+tail(sea_ice_df)
+```
+
+```{r}
+write.csv(sea_ice_df, "data/NOAA_Sea_Ice_Index.csv", row.names = FALSE)
+```
+
+```{r tsfig, fig.height = 12, fig.width = 13, fig.align = "center"}
+par(mfrow=c(2, 1), mar=c(4,5,4,2))
+
+output <- by(sea_ice_df, sea_ice_df$region, function(df) {
+  df <- subset(df, trimws(data.type) != "-9999" & extent != -9999.00 & area != -9999.00)
+  
+  plot(df$date, df$extent, type='l',
+       main=paste(ifelse(trimws(df$region[1]) == "N", "Arctic", "Antarctica"), 
+                  "Sea Ice\nExtent and Area (1979-2020)"),
+       xlab="Year", ylab=expression(paste("Area (millions of km"^"2", ")")), font.lab=2,
+       ylim=c(min(df$area), max(df$extent)),
+       col="#4c72b0", lwd=1, las=0,
+       cex.main=1.75, cex.lab=1.25, cex.axis = 1.25)
+
+  lines(df$date, df$area, pch=16, col="#c44e52", lwd=1)
+  
+  extent_ts <- ts(df$extent, start=c(1978, 11), frequency=12)
+  extent_stl <- stl(extent_ts, s.window="periodic")$time.series[,'trend']
+  lines(df$date, extent_stl, col="#4c72b0", lty=2, lwd=1)
+  
+  area_ts <- ts(df$area, start=c(1978, 11), frequency=12)
+  area_stl <- stl(area_ts, s.window="periodic")$time.series[,'trend']
+  lines(df$date, area_stl, col="#c44e52", lty=2, lwd=1)
+  
+  legend("top", legend=c("extent", "area", "trend", "trend"), 
+         col=c("#4c72b0", "#c44e52", "#4c72b0", "#c44e52"), 
+         lty=c(1, 1, 2, 2), cex=1, ncol=4)
+})
+
+```
+
+
+<br/>
+<br/>
+<br/>
+
+

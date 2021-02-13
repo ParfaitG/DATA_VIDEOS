@@ -1,0 +1,253 @@
+---
+title: "Nested Structures for Data Analytics in R"
+output: html_notebook
+---
+
+<div style="text-align:left"><img src="images/r_xml_json.png" alt="R XML JSON icon" width="200px"/></div>
+<br/>
+
+## Popular Structured Data File Formats
+
+<ul style="font-size:20px;line-height:24px">
+    <li>Text delimited files: comma-separated, tab-delimited, pipe-delimited, etc.</li>
+    <li>Nested files: XML, JSON, HTML, YAML, etc.</li>
+    <li>Binary files: Excel spreadsheets, SAS .sas7bdat, R (Rdata, Rds), etc.</li>
+</ul>
+<br/>
+
+---
+
+## XML Data
+<span style="font-size:20px">(E<b>x</b>tensible <b>M</b>arkup <b>L</b>anguage)</span>
+
+<ul style="font-size:20px;line-height:24px">
+    <li>Tree-like, markup nested structures (i.e., root, nodes)</li>
+    <li>Decades-long industry standards and specifications</li>
+    <ul style="font-size:18px;line-height:22px"><li>E.g., KML, MathML, MusicXML, RDF, RSS, SVG</li></ul>
+    <li>Used in APIs, archives, data dumps, metadata</li>
+</ul>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "")
+```
+
+---
+
+### Example Data
+
+### City of Chicago: CTA Monthly L Rides
+
+<div style="text-align:left"><img src="images/cta_logo.png" alt="R XML JSON icon" width="200px"/></div>
+<br/>
+
+<span style="font-size:18px">https://data.cityofchicago.org/Transportation/CTA-Ridership-L-Station-Entries-Monthly-Day-Type-A/t2rn-p8d7</s
+pan>
+
+```{r}
+library(XML)
+library(xml2)
+```
+
+```{r}
+doc <- XML::xmlParse("data/cta_monthly_l_rides_preview.xml")
+doc2 <- xml2::read_xml("data/cta_monthly_l_rides_preview.xml")
+
+doc
+```
+<br/>
+
+## Data Frame Build
+
+`XML::xmlToDataFrame()` + `XML:::xmlAttrsToDataFrame()`
+
+```{r}
+cta_month_rides_df <- cbind(XML::xmlToDataFrame(nodes=getNodeSet(doc, "//row/row")),
+                            XML:::xmlAttrsToDataFrame(getNodeSet(doc, "//row/row")))
+
+cta_month_rides_df
+```
+
+<br/>
+
+`xml2::xml_find_all` + `xml2::xml_attrs` + `xml2::xml_children` + <br/> 
+`data.frame` + `do.call` + `rbind`
+
+```{r}
+# RETRIEVE data NODES
+recs <- xml2::xml_find_all(doc2, "//row/row")
+
+# BIND EACH CHILD TEXT AND NAME
+df_list <- lapply(recs, function(r) {
+  attrs <- xml2::xml_attrs(r)
+  vals <- xml2::xml_children(r)
+  
+  data.frame(rbind(setNames(c(xml2::xml_text(vals), attrs), 
+                            c(xml2::xml_name(vals), names(attrs)))),
+             check.names = FALSE)
+})
+
+# COMBINE ALL DFS
+cta_month_rides_df2 <- do.call(rbind.data.frame, df_list)
+rm(recs, df_list)
+
+cta_month_rides_df2
+```
+<br/>
+
+### XPath
+<span style="font-size:20px">(Query language to search/retrieve nodes within XML documents)</span>
+
+```{r}
+doc <- XML::xmlParse("data/cta_monthly_l_rides.xml")
+
+cta_month_rides_df <- XML::xmlToDataFrame(nodes=getNodeSet(doc, "//row/row[contains(stationame, 'Harlem-Lake') 
+                                                                           and avg_weekday_rides > 4000]"))
+
+cta_month_rides_df
+```
+<br/>
+
+## Nested XML
+
+```{r}
+doc <- XML::xmlParse("data/cta_monthly_l_rides_nested.xml")
+doc2 <- xml2::read_xml("data/cta_monthly_l_rides_nested.xml")
+
+doc
+```
+<br/>
+
+### `XML::xpathSApply()` + `data.frame()`
+
+```{r}
+cta_month_rides_df <- data.frame(
+    t(xpathSApply(doc, "//row/station", xmlAttrs)),
+    month = xpathSApply(doc, "//row/month", xmlValue),
+    avg_weekday_rides = xpathSApply(doc, "//row/rides/avg_weekday_rides", xmlValue),
+    avg_saturday_rides = xpathSApply(doc, "//row/rides/avg_saturday_rides", xmlValue),
+    avg_sunday_holiday_rides =xpathSApply(doc, "//row/rides/avg_sunday_holiday_rides", xmlValue)
+  )
+
+cta_month_rides_df
+```
+<br/>
+
+### `XML::xmlToDataFrame()` + `XML:::xmlAttrsToDataFrame()`
+
+```{r}
+cta_month_rides_df <- cbind(setNames(XML:::xmlAttrsToDataFrame(getNodeSet(doc, "//row/station")), 
+                                     c("staion_id", "station_name")),
+                            setNames(XML::xmlToDataFrame(doc, nodes=getNodeSet(doc, "//row/month")), 
+                                     "month"),
+                            XML::xmlToDataFrame(doc, nodes=getNodeSet(doc, "//row/rides")))
+
+cta_month_rides_df
+```
+<br/>
+
+### XSLT
+
+<span style="font-size:20px">(Script language to transform XML documents)</span>
+
+```{r}
+library(xslt)
+
+xsl_str <- '<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+                <xsl:output method="xml" omit-xml-declaration="yes" indent="yes"/>
+                <xsl:strip-space elements="*"/>
+
+                <xsl:template match="/response">
+                 <xsl:copy>
+                   <xsl:apply-templates select="row"/>
+                 </xsl:copy>
+                </xsl:template>
+            
+                <xsl:template match="row">
+                 <xsl:copy>
+                   <station_id><xsl:value-of select="station/@id"/></station_id>
+                   <station_name><xsl:value-of select="station/@name"/></station_name>
+                   <xsl:copy-of select="month|rides/*"/>
+                 </xsl:copy>
+                </xsl:template>        
+
+            </xsl:stylesheet>'
+
+style <- read_xml(xsl_str, package = "xslt")
+new_xml <- xml_xslt(doc2, style)
+
+cat(as.character(new_xml))
+```
+
+<br/>
+
+---
+
+## JSON Data
+<span style="font-size:20px;">(<b>J</b>ava <b>S</b>cript <b>O</b>bject <b>N</b>otation)</span>
+ 
+<ul style="font-size:20px;line-height:24px">
+    <li>Mapping key-value nested data structure</li>
+    <li>Emerging web/application data format</li>
+    <li>Less restrictive without markup rules</li>
+</ul>
+
+```{r}
+library(jsonlite)
+```
+
+
+```{r}
+cat(paste0(readLines("data/cta_monthly_l_rides_preview.json"), collapse="\n"))
+```
+<br/>
+
+### `jsonlite::fromJSON()`
+
+```{r}
+cta_month_rides_df <- fromJSON("data/cta_monthly_l_rides_preview.json")
+
+cta_month_rides_df
+```
+
+<br/>
+
+### Nested JSON
+
+```{r}
+cat(paste0(readLines("data/cta_monthly_l_rides_nested.json"), collapse="\n"))
+```
+
+<br/>
+
+### `jsonlite::fromJSON()` + `cbind()`
+
+```{r}
+raw <- fromJSON("data/cta_monthly_l_rides_nested.json")
+
+str(raw)
+```
+
+```{r}
+cta_month_rides_df <- cbind(raw$station, month=raw$month, raw$rides)
+
+cta_month_rides_df
+```
+
+<br/>
+<br/>
+<br/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

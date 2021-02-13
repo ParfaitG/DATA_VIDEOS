@@ -1,0 +1,148 @@
+---
+title: "Random Data for Reproducible Examples in R"
+output: html_notebook
+---
+
+<div style="text-align: left"><img src="images/r_repro.png" width="200px"/></div>
+
+## What are Reproducible Examples?
+
+#### Used to troubleshoot issues internally with teams or externally online (GitHub, StackOverflow) 
+
+#### Consists of two components:
+
+1. #### **CODE**:  Runnable, compilable code from an empty environment
+2. #### **DATA**: All available data and assigned objects, preferably small and lightweight
+
+<br/>
+
+#### **Problem**: Data can be proprietary or contain confidential information.
+#### **Solution**: Randomized data set that resembles same structure as actual data.
+
+---
+
+### Example Data
+
+Let's assume this public dateset from Department of Energy, EIA is proprietary.
+
+```{r}
+energy_df <- read.csv("https://www.eia.gov/totalenergy/data/browser/csv.php?tbl=T02.01")
+
+head(energy_df, 10)
+tail(energy_df, 10)
+```
+
+
+#### `dput` - Generates an ASCII version of your data for easy copy/paste 
+
+
+```{r}
+### FIRST TEN ROWS
+dput(head(energy_df, 10))
+
+### LAST TEN ROWS
+dput(tail(energy_df, 10))
+```
+
+### Built-in Datasets
+
+#### A quick alternative is to use one of R's built-in datasets or datasets in other packages. 
+
+```{r}
+data()
+
+data(package = "MASS")
+```
+
+#### Then, call `dput` on a few observations:
+
+```{r}
+dput(head(datasets::airquality))
+dput(head(MASS::road))
+```
+<br/>
+
+#### **Pros**: Quick setup and good for general solutions
+#### **Cons**: Specific solutions requires exact structure of original dataset. 
+
+---
+
+
+## Random Method
+
+#### Recreate your data with same columns and structure as original dataset using random data
+
+### Assess Existing Structure
+
+```{r}
+str(energy_df)
+
+unique(energy_df$MSN)
+
+summary(energy_df[c("YYYYMM", "Value")])
+
+unique(energy_df$Description)
+
+unique(energy_df$Unit)
+```
+
+### Random Sample and Generation
+
+- #### Character/Factor Values: `sample` + `replace = TRUE`
+- #### Integer/Numeric Columns: `rnorm`, `rpois`, `runif`, `rgamma`
+- #### Repeat Values: `rep`, `rep.int`, `rep_len`, `replicate`
+- #### Sequence Values: `seq`, `seq.int`, `seq_len`, `seq_along` `seq.Date`
+
+```{r}
+set.seed(112020)
+
+months_series <- seq.Date(as.Date('2000-01-01'), as.Date('2020-11-01'), by="months")
+rows <- length(months_series)
+
+random_energy_df <- cbind.data.frame(
+                        expand.grid(MSN = LETTERS[1:11],
+                                    YYYYMM = months_series),
+                        Value = runif(rows * 11, min(energy_df$Value, na.rm=FALSE), 
+                                      max(energy_df$Value, na.rm=FALSE)),
+                        Description = paste0("Group", c(paste0('0',1:11)))
+                    )
+
+head(random_energy_df, 20)
+```
+
+```{r}
+tail(random_energy_df, 20)
+```
+
+
+```{r}
+### RANDOM TEN ROWS
+set.seed(112020)
+
+rows <- sample(1:nrow(random_energy_df), 10)
+dput(random_energy_df[rows,])
+```
+```{r}
+sample_data <- structure(list(MSN = structure(c(3L, 3L, 4L, 9L, 4L, 4L, 11L, 
+6L, 11L, 7L), .Label = c("A", "B", "C", "D", "E", "F", "G", "H", 
+"I", "J", "K"), class = "factor"), YYYYMM = structure(c(11231, 
+15706, 12296, 16222, 11048, 14791, 17866, 16832, 12570, 13330
+), class = "Date"), Value = c(3947.55347209512, 32062.800648635, 
+92329.7116283812, 32868.0606114609, 67282.0128584139, 19799.3153516052, 
+80009.5099149201, 58385.0231839605, 93991.1068786711, 19116.7049369928
+), Description = c("Group03", "Group03", "Group04", "Group09", 
+"Group04", "Group04", "Group011", "Group06", "Group011", "Group07"
+)), row.names = c(102L, 1719L, 488L, 1912L, 37L, 1390L, 2508L, 
+2129L, 594L, 865L), class = "data.frame")
+
+sample_data
+```
+
+
+<br/>
+<br/>
+<br/>
+
+
+
+

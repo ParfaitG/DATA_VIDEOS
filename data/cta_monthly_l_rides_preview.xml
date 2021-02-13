@@ -1,0 +1,94 @@
+<response>
+  <row>
+    <row _id="row-fwjy-9q5k-ps6p" _uuid="00000000-0000-0000-5FAB-5CAB5D21E10C" _position="0" _address="https://data.cityofchicago.org/resource/t2rn-p8d7/row-fwjy-9q5k-ps6p">
+      <station_id>40900</station_id>
+      <stationame>Howard</stationame>
+      <month_beginning>2001-01-01T00:00:00</month_beginning>
+      <avg_weekday_rides>6233.9</avg_weekday_rides>
+      <avg_saturday_rides>3814.5</avg_saturday_rides>
+      <avg_sunday_holiday_rides>2408.6</avg_sunday_holiday_rides>
+      <monthtotal>164447</monthtotal>
+    </row>
+    <row _id="row-nyyd~hctf_nrwa" _uuid="00000000-0000-0000-6DE8-BA4BB25FC36E" _position="0" _address="https://data.cityofchicago.org/resource/t2rn-p8d7/row-nyyd~hctf_nrwa">
+      <station_id>41190</station_id>
+      <stationame>Jarvis</stationame>
+      <month_beginning>2001-01-01T00:00:00</month_beginning>
+      <avg_weekday_rides>1489.1</avg_weekday_rides>
+      <avg_saturday_rides>1054</avg_saturday_rides>
+      <avg_sunday_holiday_rides>718</avg_sunday_holiday_rides>
+      <monthtotal>40567</monthtotal>
+    </row>
+    <row _id="row-t6pr.n6ds.4am9" _uuid="00000000-0000-0000-2191-71EC625EDF2F" _position="0" _address="https://data.cityofchicago.org/resource/t2rn-p8d7/row-t6pr.n6ds.4am9">
+      <station_id>40100</station_id>
+      <stationame>Morse</stationame>
+      <month_beginning>2001-01-01T00:00:00</month_beginning>
+      <avg_weekday_rides>4412.5</avg_weekday_rides>
+      <avg_saturday_rides>3064.5</avg_saturday_rides>
+      <avg_sunday_holiday_rides>2087.8</avg_sunday_holiday_rides>
+      <monthtotal>119772</monthtotal>
+    </row>
+    <row _id="row-cjyk~sup7-huut" _uuid="00000000-0000-0000-0AE6-ACE513A0342D" _position="0" _address="https://data.cityofchicago.org/resource/t2rn-p8d7/row-cjyk~sup7-huut">
+      <station_id>41300</station_id>
+      <stationame>Loyola</stationame>
+      <month_beginning>2001-01-01T00:00:00</month_beginning>
+      <avg_weekday_rides>4664.5</avg_weekday_rides>
+      <avg_saturday_rides>3156</avg_saturday_rides>
+      <avg_sunday_holiday_rides>1952.8</avg_sunday_holiday_rides>
+      <monthtotal>125008</monthtotal>
+    </row>
+    <row _id="row-8ikx~cq3f.zwm2" _uuid="00000000-0000-0000-5665-E0B11642D467" _position="0" _address="https://data.cityofchicago.org/resource/t2rn-p8d7/row-8ikx~cq3f.zwm2">
+      <station_id>40760</station_id>
+      <stationame>Granville</stationame>
+      <month_beginning>2001-01-01T00:00:00</month_beginning>
+      <avg_weekday_rides>3109.8</avg_weekday_rides>
+      <avg_saturday_rides>2126</avg_saturday_rides>
+      <avg_sunday_holiday_rides>1453.8</avg_sunday_holiday_rides>
+      <monthtotal>84189</monthtotal>
+    </row>
+    <row _id="row-vvtf_7vrm-97xy" _uuid="00000000-0000-0000-5736-C996BCE35489" _position="0" _address="https://data.cityofchicago.org/resource/t2rn-p8d7/row-vvtf_7vrm-97xy">
+      <station_id>40850</station_id>
+      <stationame>Library</stationame>
+      <month_beginning>2020-09-01T00:00:00</month_beginning>
+      <avg_weekday_rides>864.2</avg_weekday_rides>
+      <avg_saturday_rides>534</avg_saturday_rides>
+      <avg_sunday_holiday_rides>417.2</avg_sunday_holiday_rides>
+      <monthtotal>22370</monthtotal>
+    </row>
+    <row _id="row-n9ei.vu5v.yd52" _uuid="00000000-0000-0000-4734-5E409BEA7F70" _position="0" _address="https://data.cityofchicago.org/resource/t2rn-p8d7/row-n9ei.vu5v.yd52">
+      <station_id>40680</station_id>
+      <stationame>Adams/Wabash</stationame>
+      <month_beginning>2020-09-01T00:00:00</month_beginning>
+      <avg_weekday_rides>1332.3</avg_weekday_rides>
+      <avg_saturday_rides>791.8</avg_saturday_rides>
+      <avg_sunday_holiday_rides>601.6</avg_sunday_holiday_rides>
+      <monthtotal>34154</monthtotal>
+    </row>
+    <row _id="row-h278_29y8-vcs5" _uuid="00000000-0000-0000-2D6E-542239E417F5" _position="0" _address="https://data.cityofchicago.org/resource/t2rn-p8d7/row-h278_29y8-vcs5">
+      <station_id>41700</station_id>
+      <stationame>Washington/Wabash</stationame>
+      <month_beginning>2020-09-01T00:00:00</month_beginning>
+      <avg_weekday_rides>2707.4</avg_weekday_rides>
+      <avg_saturday_rides>1909.8</avg_saturday_rides>
+      <avg_sunday_holiday_rides>1438.6</avg_sunday_holiday_rides>
+      <monthtotal>71688</monthtotal>
+    </row>
+    <row _id="row-icuu~a5em_e9n4" _uuid="00000000-0000-0000-368B-C636EBE912C2" _position="0" _address="https://data.cityofchicago.org/resource/t2rn-p8d7/row-icuu~a5em_e9n4">
+      <station_id>40260</station_id>
+      <stationame>State/Lake</stationame>
+      <month_beginning>2020-09-01T00:00:00</month_beginning>
+      <avg_weekday_rides>2410</avg_weekday_rides>
+      <avg_saturday_rides>2042.3</avg_saturday_rides>
+      <avg_sunday_holiday_rides>1660.6</avg_sunday_holiday_rides>
+      <monthtotal>67083</monthtotal>
+    </row>
+    <row _id="row-na7a~6yct-k8fv" _uuid="00000000-0000-0000-965D-B7B17499AB88" _position="0" _address="https://data.cityofchicago.org/resource/t2rn-p8d7/row-na7a~6yct-k8fv">
+      <station_id>40380</station_id>
+      <stationame>Clark/Lake</stationame>
+      <month_beginning>2020-09-01T00:00:00</month_beginning>
+      <avg_weekday_rides>2949.6</avg_weekday_rides>
+      <avg_saturday_rides>1657</avg_saturday_rides>
+      <avg_sunday_holiday_rides>1453.8</avg_sunday_holiday_rides>
+      <monthtotal>75839</monthtotal>
+    </row>
+  </row>
+</response>
